@@ -1,18 +1,31 @@
 <!DOCTYPE html>
 <html>
+<head>
+<meta charset="UTF-8">
+<style>
+body{font-family:Arial}
+.comment-box{border:1px solid #ddd;padding:10px;margin:10px;border-radius:10px}
+.comment-box img{border-radius:50%;vertical-align:middle}
+.comment-box b{margin-left:10px}
+</style>
+</head>
+
 <body>
+
+<h3>💬 Bình luận</h3>
 <div id="comments"></div>
-<img src="https://raw.githubusercontent.com/chichilan09-png/comment-widget/main/Avatars/avatar1.jpg" width="100">
 
 <form id="commentForm">
-<input id="name" placeholder="Tên của bạn" required><br>
-<textarea id="comment" placeholder="Viết bình luận..." required></textarea><br>
+<input id="name" placeholder="Tên của bạn" required><br><br>
+<textarea id="comment" placeholder="Viết bình luận..." required></textarea><br><br>
 <button type="submit">Gửi</button>
 </form>
 
 <script>
 const API="https://script.google.com/macros/s/AKfycby_Q9yLCR4JLxYjn1vEYBeQJd6dWYv2xtg_dAKtkTV0YUo92DPxCxzH37Nk5k32Gxno/exec";
-const PAGE=location.pathname;
+
+
+const PAGE = window.location.href; 
 
 const avatars=[
  "https://raw.githubusercontent.com/chichilan09-png/comment-widget/main/Avatars/avatar1.jpg",
@@ -36,42 +49,59 @@ function randomAvatar(){
  return avatars[Math.floor(Math.random()*avatars.length)];
 }
 
+
 async function loadComments(){
- const res=await fetch(API+"?page="+PAGE);
- const data=await res.json();
- render(data);
+ try{
+  const res = await fetch(API+"?page="+encodeURIComponent(PAGE));
+  const data = await res.json();
+  render(data);
+ }catch(e){
+  console.log("Load error:", e);
+ }
 }
 
+
 function render(data){
- const box=document.getElementById("comments");
+ const box = document.getElementById("comments");
  box.innerHTML="";
  data.forEach(c=>{
-  box.innerHTML+=`
-   <div style="border:1px solid #ddd;padding:10px;margin:10px">
-    <img src="${c.avatar}" width="40" style="border-radius:50%">
+  box.innerHTML += `
+   <div class="comment-box">
+    <img src="${c.avatar}" width="40">
     <b>${c.name}</b><br>
-    ${c.comment}
+    <div>${c.comment}</div>
    </div>
   `;
  });
 }
 
-document.getElementById("commentForm").onsubmit=async(e)=>{
+
+document.getElementById("commentForm").addEventListener("submit", async function(e){
  e.preventDefault();
+
+ const name = document.getElementById("name").value;
+ const comment = document.getElementById("comment").value;
+
  await fetch(API,{
   method:"POST",
-  body:JSON.stringify({
-   page:PAGE,
-   name:document.getElementById("name").value,
-   avatar:randomAvatar(),
-   comment:document.getElementById("comment").value
+  headers: {"Content-Type":"application/json"},
+  body: JSON.stringify({
+   page: PAGE,
+   name: name,
+   avatar: randomAvatar(),
+   comment: comment
   })
  });
- name.value=""; comment.value="";
-};
 
-setInterval(loadComments,1000);
+ document.getElementById("name").value="";
+ document.getElementById("comment").value="";
+ loadComments();
+});
+
+// refresh mỗi 3s (ổn định hơn)
+setInterval(loadComments,3000);
 loadComments();
 </script>
+
 </body>
 </html>
