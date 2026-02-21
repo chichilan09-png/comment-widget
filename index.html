@@ -4,20 +4,20 @@
 <div id="comments"></div>
 
 <form id="commentForm">
-  <input id="name" placeholder="Tên" required><br>
-  <textarea id="comment" placeholder="Bình luận..." required></textarea><br>
-  <button type="submit">Gửi</button>
+<input id="name" placeholder="Tên của bạn" required><br>
+<textarea id="comment" placeholder="Viết bình luận..." required></textarea><br>
+<button type="submit">Gửi</button>
 </form>
 
 <script>
-const API = "https://script.google.com/macros/s/AKfycby_Q9yLCR4JLxYjn1vEYBeQJd6dWYv2xtg_dAKtkTV0YUo92DPxCxzH37Nk5k32Gxno/exec";
-const PAGE = location.pathname;
+const API="https://script.google.com/macros/s/AKfycby_Q9yLCR4JLxYjn1vEYBeQJd6dWYv2xtg_dAKtkTV0YUo92DPxCxzH37Nk5k32Gxno/exec";
+const PAGE=location.pathname;
 
-const avatars = [
- "https://drive.google.com/uc?id=1l0ehV_VrqBuXv_GOOj6NE-9IdsZ_otz-",
- "https://drive.google.com/uc?id=1wmWuSwl5K-gw0jdgSlWHCCEsIElm2uxN",
- "https://drive.google.com/uc?id=1FEVmkPxks6sS-xw4MJkczvfoDGHfXwWh",
- "https://drive.google.com/uc?id=1UDfQbD9fdEi285N5HrhHDCTHPQpNt9ZF"
+const avatars=[
+ "https://drive.google.com/uc?id=1UDfQbD9fdEi285N5HrhHDCTHPQpNt9ZF",
+ "https://drive.google.com/uc?id=1TSdjccwqiacbpUH-eA1t_DrF17MIQUry",
+ "https://drive.google.com/uc?id=1FRgrQncQDADkQB5POGTNP0qxuWqY8Ffh",
+ "https://drive.google.com/uc?id=1l0ehV_VrqBuXv_GOOj6NE-9IdsZ_otz-"
 ];
 
 function randomAvatar(){
@@ -25,33 +25,34 @@ function randomAvatar(){
 }
 
 async function loadComments(){
- const res = await fetch(API + "?page=" + PAGE);
- const data = await res.json();
+ const res=await fetch(API+"?page="+PAGE);
+ const data=await res.json();
  render(data);
 }
 
 function render(data){
- const container = document.getElementById("comments");
- container.innerHTML="";
+ const box=document.getElementById("comments");
+ box.innerHTML="";
  data.forEach(c=>{
-  container.innerHTML += `
+  box.innerHTML+=`
    <div style="border:1px solid #ddd;padding:10px;margin:10px">
-    <img src="${c.avatar}" width="40"> <b>${c.name}</b><br>
+    <img src="${c.avatar}" width="40" style="border-radius:50%">
+    <b>${c.name}</b><br>
     ${c.comment}
    </div>
   `;
  });
 }
 
-document.getElementById("commentForm").onsubmit = async(e)=>{
+document.getElementById("commentForm").onsubmit=async(e)=>{
  e.preventDefault();
  await fetch(API,{
   method:"POST",
-  body: JSON.stringify({
-   page: PAGE,
-   name: name.value,
-   avatar: randomAvatar(),
-   comment: comment.value
+  body:JSON.stringify({
+   page:PAGE,
+   name:document.getElementById("name").value,
+   avatar:randomAvatar(),
+   comment:document.getElementById("comment").value
   })
  });
  name.value=""; comment.value="";
