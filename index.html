@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html>
 <body>
-<h3>💬 Bình luận</h3>
-<div id="comments">Đang tải bình luận...</div>
+<div id="comments"></div>
+<img src="https://raw.githubusercontent.com/chichilan09-png/comment-widget/main/Avatars/avatar1.jpg" width="100">
 
 <form id="commentForm">
 <input id="name" placeholder="Tên của bạn" required><br>
@@ -12,9 +12,11 @@
 
 <script>
 const API="https://script.google.com/macros/s/AKfycby_Q9yLCR4JLxYjn1vEYBeQJd6dWYv2xtg_dAKtkTV0YUo92DPxCxzH37Nk5k32Gxno/exec";
-
-const PAGE = encodeURIComponent(window.location.href);
-
+const PAGE=location.pathname;
+const savedName = localStorage.getItem("comment_name");
+if(savedName){
+ document.getElementById("name").value = savedName;
+}
 const avatars=[
  "https://raw.githubusercontent.com/chichilan09-png/comment-widget/main/Avatars/avatar1.jpg",
  "https://raw.githubusercontent.com/chichilan09-png/comment-widget/main/Avatars/avatar2.jpg",
@@ -38,56 +40,61 @@ function randomAvatar(){
 }
 
 async function loadComments(){
- try{
-  const res = await fetch(API+"?page="+PAGE);
-  const data = await res.json();
-  render(data);
- }catch(e){
-  console.error("Load comment error:", e);
- }
+ const res=await fetch(API+"?page="+PAGE);
+ const data=await res.json();
+ render(data);
 }
-
+ 
+function addCommentToUI(c){
+ const box=document.getElementById("comments");
+ box.innerHTML = `
+   <div style="border:1px solid #ddd;padding:10px;margin:10px">
+    <img src="${c.avatar}" width="40" style="border-radius:50%">
+    <b>${c.name}</b><br>
+    ${c.comment}
+   </div>
+ ` + box.innerHTML;
+}
 function render(data){
  const box=document.getElementById("comments");
  box.innerHTML="";
- if(data.length==0){
-   box.innerHTML="Chưa có bình luận nào.";
-   return;
- }
  data.forEach(c=>{
-  box.innerHTML+=`
-   <div style="border:1px solid #ddd;padding:10px;margin:10px;border-radius:10px">
-    <img src="${c.avatar}" width="40" style="border-radius:50%;vertical-align:middle">
+  box.innerHTML+=
+   <div style="border:1px solid #ddd;padding:10px;margin:10px">
+    <img src="${c.avatar}" width="40" style="border-radius:50%">
     <b>${c.name}</b><br>
-    <div style="margin-top:5px">${c.comment}</div>
+    ${c.comment}
    </div>
-  `;
+  ;
  });
 }
 
 document.getElementById("commentForm").onsubmit=async(e)=>{
+ document.getElementById("commentForm").onsubmit=async(e)=>{
  e.preventDefault();
 
- const name=document.getElementById("name").value;
- const comment=document.getElementById("comment").value;
+ const userName = document.getElementById("name").value;
+ localStorage.setItem("comment_name", userName);
 
+ const avatar = randomAvatar();
+ const text = document.getElementById("comment").value;
+ e.preventDefault();
+  addCommentToUI({name:userName, avatar:avatar, comment:text});
+  
  await fetch(API,{
   method:"POST",
   body:JSON.stringify({
    page:PAGE,
-   name:name,
+   name:document.getElementById("name").value,
    avatar:randomAvatar(),
-   comment:comment
+   comment:document.getElementById("comment").value
   })
  });
-
- document.getElementById("name").value="";
- document.getElementById("comment").value="";
-
- loadComments(); // reload ngay
+ name.value=""; comment.value="";
 };
+ 
 
-setInterval(loadComments,2000);
+setInterval(loadComments,1000);
 loadComments();
 </script>
 </body>
