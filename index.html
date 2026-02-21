@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+<body>
+<div id="comments"></div>
+
+<form id="commentForm">
+  <input id="name" placeholder="Tên" required><br>
+  <textarea id="comment" placeholder="Bình luận..." required></textarea><br>
+  <button type="submit">Gửi</button>
+</form>
+
+<script>
+const API = "https://script.google.com/macros/s/AKfycby_Q9yLCR4JLxYjn1vEYBeQJd6dWYv2xtg_dAKtkTV0YUo92DPxCxzH37Nk5k32Gxno/exec";
+const PAGE = location.pathname;
+
+const avatars = [
+ "https://drive.google.com/uc?id=1l0ehV_VrqBuXv_GOOj6NE-9IdsZ_otz-",
+ "https://drive.google.com/uc?id=1wmWuSwl5K-gw0jdgSlWHCCEsIElm2uxN",
+ "https://drive.google.com/uc?id=1FEVmkPxks6sS-xw4MJkczvfoDGHfXwWh",
+ "https://drive.google.com/uc?id=1UDfQbD9fdEi285N5HrhHDCTHPQpNt9ZF"
+];
+
+function randomAvatar(){
+ return avatars[Math.floor(Math.random()*avatars.length)];
+}
+
+async function loadComments(){
+ const res = await fetch(API + "?page=" + PAGE);
+ const data = await res.json();
+ render(data);
+}
+
+function render(data){
+ const container = document.getElementById("comments");
+ container.innerHTML="";
+ data.forEach(c=>{
+  container.innerHTML += `
+   <div style="border:1px solid #ddd;padding:10px;margin:10px">
+    <img src="${c.avatar}" width="40"> <b>${c.name}</b><br>
+    ${c.comment}
+   </div>
+  `;
+ });
+}
+
+document.getElementById("commentForm").onsubmit = async(e)=>{
+ e.preventDefault();
+ await fetch(API,{
+  method:"POST",
+  body: JSON.stringify({
+   page: PAGE,
+   name: name.value,
+   avatar: randomAvatar(),
+   comment: comment.value
+  })
+ });
+ name.value=""; comment.value="";
+};
+
+setInterval(loadComments,1000);
+loadComments();
+</script>
+</body>
+</html>
