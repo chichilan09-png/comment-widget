@@ -36,15 +36,19 @@ function randomAvatar(){
  return avatars[Math.floor(Math.random()*avatars.length)];
 }
 
+/* ===== LƯU COMMENT VÀO LOCAL STORAGE ===== */
 function saveLocalComments(data){
  localStorage.setItem("comments_"+PAGE, JSON.stringify(data));
 }
- function loadLocalComments(){
+
+function loadLocalComments(){
  const cache = localStorage.getItem("comments_"+PAGE);
  return cache ? JSON.parse(cache) : [];
-  
+}
+
+/* ===== LOAD COMMENT TỪ GOOGLE SHEETS ===== */
 async function loadComments(){
-try{
+ try{
   const res=await fetch(API+"?page="+PAGE);
   const data=await res.json();
   render(data);
@@ -56,6 +60,7 @@ try{
  }
 }
 
+/* ===== HIỂN THỊ COMMENT ===== */
 function render(data){
  const box=document.getElementById("comments");
  box.innerHTML="";
@@ -70,6 +75,7 @@ function render(data){
  });
 }
 
+/* ===== GỬI COMMENT ===== */
 document.getElementById("commentForm").onsubmit=async(e)=>{
  e.preventDefault();
  const newComment={
@@ -83,15 +89,20 @@ document.getElementById("commentForm").onsubmit=async(e)=>{
   method:"POST",
   body:JSON.stringify(newComment)
  });
-const cache = loadLocalComments();
+
+ // hiển thị ngay comment mới (không cần chờ API)
+ const cache = loadLocalComments();
  cache.push(newComment);
  saveLocalComments(cache);
  render(cache);
 
  name.value=""; comment.value="";
 };
+
+/* LOAD CACHE TRƯỚC */
 render(loadLocalComments());
 
+/* LOAD SERVER MỖI 1 GIÂY */
 setInterval(loadComments,1000);
 loadComments();
 </script>
