@@ -1,31 +1,19 @@
 <!DOCTYPE html>
 <html>
-<head>
-<meta charset="UTF-8">
-<style>
-body{font-family:Arial}
-.comment-box{border:1px solid #ddd;padding:10px;margin:10px;border-radius:10px}
-.comment-box img{border-radius:50%;vertical-align:middle}
-.comment-box b{margin-left:10px}
-</style>
-</head>
-
 <body>
-
 <h3>💬 Bình luận</h3>
-<div id="comments"></div>
+<div id="comments">Đang tải bình luận...</div>
 
 <form id="commentForm">
-<input id="name" placeholder="Tên của bạn" required><br><br>
-<textarea id="comment" placeholder="Viết bình luận..." required></textarea><br><br>
+<input id="name" placeholder="Tên của bạn" required><br>
+<textarea id="comment" placeholder="Viết bình luận..." required></textarea><br>
 <button type="submit">Gửi</button>
 </form>
 
 <script>
 const API="https://script.google.com/macros/s/AKfycby_Q9yLCR4JLxYjn1vEYBeQJd6dWYv2xtg_dAKtkTV0YUo92DPxCxzH37Nk5k32Gxno/exec";
 
-
-const PAGE = window.location.href; 
+const PAGE = encodeURIComponent(window.location.href);
 
 const avatars=[
  "https://raw.githubusercontent.com/chichilan09-png/comment-widget/main/Avatars/avatar1.jpg",
@@ -49,59 +37,58 @@ function randomAvatar(){
  return avatars[Math.floor(Math.random()*avatars.length)];
 }
 
-
 async function loadComments(){
  try{
-  const res = await fetch(API+"?page="+encodeURIComponent(PAGE));
+  const res = await fetch(API+"?page="+PAGE);
   const data = await res.json();
   render(data);
  }catch(e){
-  console.log("Load error:", e);
+  console.error("Load comment error:", e);
  }
 }
 
-
 function render(data){
- const box = document.getElementById("comments");
+ const box=document.getElementById("comments");
  box.innerHTML="";
+ if(data.length==0){
+   box.innerHTML="Chưa có bình luận nào.";
+   return;
+ }
  data.forEach(c=>{
-  box.innerHTML += `
-   <div class="comment-box">
-    <img src="${c.avatar}" width="40">
+  box.innerHTML+=`
+   <div style="border:1px solid #ddd;padding:10px;margin:10px;border-radius:10px">
+    <img src="${c.avatar}" width="40" style="border-radius:50%;vertical-align:middle">
     <b>${c.name}</b><br>
-    <div>${c.comment}</div>
+    <div style="margin-top:5px">${c.comment}</div>
    </div>
   `;
  });
 }
 
-
-document.getElementById("commentForm").addEventListener("submit", async function(e){
+document.getElementById("commentForm").onsubmit=async(e)=>{
  e.preventDefault();
 
- const name = document.getElementById("name").value;
- const comment = document.getElementById("comment").value;
+ const name=document.getElementById("name").value;
+ const comment=document.getElementById("comment").value;
 
  await fetch(API,{
   method:"POST",
-  headers: {"Content-Type":"application/json"},
-  body: JSON.stringify({
-   page: PAGE,
-   name: name,
-   avatar: randomAvatar(),
-   comment: comment
+  body:JSON.stringify({
+   page:PAGE,
+   name:name,
+   avatar:randomAvatar(),
+   comment:comment
   })
  });
 
  document.getElementById("name").value="";
  document.getElementById("comment").value="";
- loadComments();
-});
 
-// refresh mỗi 3s (ổn định hơn)
-setInterval(loadComments,3000);
+ loadComments(); // reload ngay
+};
+
+setInterval(loadComments,2000);
 loadComments();
 </script>
-
 </body>
 </html>
